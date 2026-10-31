@@ -31,6 +31,12 @@
       --wrong-bg: #fee2e2;
       --wrong-border: #dc2626;
       --wrong-text: #7f1d1d;
+      --streak-bg: #fff7ed;
+      --streak-border: #f97316;
+      --streak-text: #c2410c;
+      --record-bg: #fef9c3;
+      --record-border: #eab308;
+      --record-text: #854d0e;
       --track-bg: #e2e8f0;
       --shadow: 0 14px 34px -10px rgba(15, 23, 42, 0.12), 0 4px 8px -4px rgba(15, 23, 42, 0.06);
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
@@ -62,6 +68,12 @@
         --wrong-bg: rgba(220, 38, 38, 0.22);
         --wrong-border: #ef4444;
         --wrong-text: #fecaca;
+        --streak-bg: rgba(249, 115, 22, 0.18);
+        --streak-border: #fb923c;
+        --streak-text: #fed7aa;
+        --record-bg: rgba(234, 179, 8, 0.2);
+        --record-border: #facc15;
+        --record-text: #fef08a;
         --track-bg: #1e293b;
         --shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(56, 189, 248, 0.1);
       }
@@ -138,6 +150,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 10px;
       font-family: var(--mono);
       font-size: 11px;
       letter-spacing: 0.08em;
@@ -151,6 +164,7 @@
       gap: 7px;
       font-weight: 600;
       color: var(--text-secondary);
+      white-space: nowrap;
     }
 
     .status-dot {
@@ -159,6 +173,39 @@
       border-radius: 50%;
       background: var(--hud-dot);
       box-shadow: 0 0 8px var(--hud-dot);
+      flex-shrink: 0;
+    }
+
+    .telemetry-right {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .streak-badge {
+      background: var(--streak-bg);
+      color: var(--streak-text);
+      border: 1px solid var(--streak-border);
+      font-family: var(--mono);
+      font-weight: 800;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+      flex-shrink: 0;
+      box-shadow: 0 0 10px rgba(249, 115, 22, 0.25);
+      animation: streakPop 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes streakPop {
+      0% { transform: scale(0.65); opacity: 0; }
+      60% { transform: scale(1.12); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
     }
 
     .header {
@@ -502,15 +549,33 @@
       margin-bottom: 24px;
     }
 
+    .new-record-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--record-bg);
+      color: var(--record-text);
+      border: 1px solid var(--record-border);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      animation: streakPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
     .results-score-box {
       background: var(--option-bg);
       border: 1px solid var(--option-border);
       border-radius: 12px;
-      padding: 18px 20px;
+      padding: 18px 16px;
       margin-bottom: 24px;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
       position: relative;
     }
 
@@ -518,11 +583,12 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
+      padding: 4px 6px;
     }
 
     .stat-value {
       font-family: var(--mono);
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 800;
       color: var(--accent);
       letter-spacing: -0.02em;
@@ -530,28 +596,25 @@
 
     .stat-label {
       font-family: var(--mono);
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-muted);
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
-
-    .stat-divider {
-      width: 1px;
-      height: 36px;
-      background: var(--option-border);
-    }
   </style>
 </head>
 <body>
   <main class="container" aria-live="polite">
-    <div class="telemetry-strip" aria-hidden="true">
-      <span class="telemetry-status">
+    <div class="telemetry-strip">
+      <span class="telemetry-status" aria-hidden="true">
         <span class="status-dot"></span>
         <span id="telemetry-link">TELEMETRY: ONLINE</span>
       </span>
-      <span id="telemetry-code">SYS // NAV-10</span>
+      <span class="telemetry-right">
+        <span id="streak-badge" class="streak-badge hidden" role="status" aria-live="polite"></span>
+        <span id="telemetry-code" aria-hidden="true">SYS // NAV-10</span>
+      </span>
     </div>
     <header class="header">
       <div class="brand">
@@ -600,6 +663,9 @@
     <!-- Results View -->
     <section id="results-view" class="results-screen hidden">
       <div id="results-emoji" class="results-emoji" aria-hidden="true">🧑‍🚀</div>
+      <div>
+        <span id="new-record-badge" class="new-record-badge hidden"></span>
+      </div>
       <h2 id="results-title" class="results-title">Mission Complete!</h2>
       <p id="results-subtitle" class="results-subtitle"></p>
 
@@ -608,10 +674,17 @@
           <span class="stat-value" id="final-score">0 / 10</span>
           <span class="stat-label" id="final-score-label">Final Score</span>
         </div>
-        <div class="stat-divider"></div>
         <div class="stat-item">
           <span class="stat-value" id="final-accuracy">0%</span>
           <span class="stat-label" id="final-accuracy-label">Accuracy</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="final-max-streak">0</span>
+          <span class="stat-label" id="final-max-streak-label">Max Streak</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="final-high-score">0 / 10</span>
+          <span class="stat-label" id="final-high-score-label">High Score</span>
         </div>
       </div>
 
@@ -634,8 +707,12 @@
         seeResults: "See Results",
         correctPrefix: "Correct!",
         wrongPrefix: "Not quite.",
+        streakBadge: (count) => `🔥 ${count} STREAK`,
         finalScoreLabel: "Final Score",
         accuracyLabel: "Accuracy",
+        maxStreakLabel: "Max Streak",
+        highScoreLabel: "High Score",
+        newRecordBadge: "🏆 NEW RECORD",
         playAgain: "Play Again",
         ranks: {
           perfect: {
@@ -728,8 +805,12 @@
         seeResults: "결과 보기",
         correctPrefix: "정답입니다!",
         wrongPrefix: "아쉽네요.",
+        streakBadge: (count) => `🔥 ${count}연속 정답`,
         finalScoreLabel: "최종 점수",
         accuracyLabel: "정답률",
+        maxStreakLabel: "최대 연속 정답",
+        highScoreLabel: "최고 기록",
+        newRecordBadge: "🏆 신기록 달성!",
         playAgain: "다시 도전하기",
         ranks: {
           perfect: {
@@ -815,15 +896,21 @@
     };
 
     const KEYS = ["A", "B", "C", "D"];
+    const HIGH_SCORE_STORAGE_KEY = "spaceQuizHighScore";
 
     let currentLang = "ko";
     let currentIndex = 0;
     let score = 0;
+    let currentStreak = 0;
+    let maxStreak = 0;
+    let highScore = loadHighScore();
+    let isNewRecord = false;
     let answered = false;
     let selectedOptionIndex = null;
 
     const brandTitle = document.getElementById("brand-title");
     const telemetryLink = document.getElementById("telemetry-link");
+    const streakBadge = document.getElementById("streak-badge");
     const scoreLabel = document.getElementById("score-label");
     const langButtons = document.querySelectorAll(".lang-btn");
     const quizView = document.getElementById("quiz-view");
@@ -843,14 +930,52 @@
     const nextBtnLabel = document.getElementById("next-btn-label");
 
     const resultsEmoji = document.getElementById("results-emoji");
+    const newRecordBadge = document.getElementById("new-record-badge");
     const resultsTitle = document.getElementById("results-title");
     const resultsSubtitle = document.getElementById("results-subtitle");
     const finalScore = document.getElementById("final-score");
     const finalScoreLabel = document.getElementById("final-score-label");
     const finalAccuracy = document.getElementById("final-accuracy");
     const finalAccuracyLabel = document.getElementById("final-accuracy-label");
+    const finalMaxStreak = document.getElementById("final-max-streak");
+    const finalMaxStreakLabel = document.getElementById("final-max-streak-label");
+    const finalHighScore = document.getElementById("final-high-score");
+    const finalHighScoreLabel = document.getElementById("final-high-score-label");
     const restartBtn = document.getElementById("restart-btn");
     const restartBtnLabel = document.getElementById("restart-btn-label");
+
+    function loadHighScore() {
+      try {
+        const raw = window.localStorage.getItem(HIGH_SCORE_STORAGE_KEY);
+        const parsed = parseInt(raw, 10);
+        return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+      } catch (_) {
+        return 0;
+      }
+    }
+
+    function saveHighScore(newScore) {
+      try {
+        window.localStorage.setItem(HIGH_SCORE_STORAGE_KEY, String(newScore));
+      } catch (_) {
+        // Ignore storage errors in restricted environments
+      }
+    }
+
+    function updateStreakBadge(animate = false) {
+      const t = I18N[currentLang];
+      if (currentStreak >= 2 && resultsView.classList.contains("hidden")) {
+        streakBadge.textContent = t.streakBadge(currentStreak);
+        streakBadge.classList.remove("hidden");
+        if (animate) {
+          streakBadge.style.animation = "none";
+          void streakBadge.offsetWidth;
+          streakBadge.style.animation = "";
+        }
+      } else {
+        streakBadge.classList.add("hidden");
+      }
+    }
 
     function updateStaticLabels() {
       const t = I18N[currentLang];
@@ -861,7 +986,11 @@
       scoreLabel.textContent = t.scoreLabel;
       finalScoreLabel.textContent = t.finalScoreLabel;
       finalAccuracyLabel.textContent = t.accuracyLabel;
+      finalMaxStreakLabel.textContent = t.maxStreakLabel;
+      finalHighScoreLabel.textContent = t.highScoreLabel;
+      newRecordBadge.textContent = t.newRecordBadge;
       restartBtnLabel.textContent = t.playAgain;
+      updateStreakBadge(false);
 
       langButtons.forEach((btn) => {
         btn.classList.toggle("active", btn.dataset.lang === currentLang);
@@ -955,25 +1084,51 @@
       const item = I18N[currentLang].questions[currentIndex];
       if (selectedIndex === item.answer) {
         score += 1;
+        currentStreak += 1;
+        if (currentStreak > maxStreak) {
+          maxStreak = currentStreak;
+        }
         scoreValue.textContent = String(score);
         scorePill.classList.remove("bump");
         void scorePill.offsetWidth;
         scorePill.classList.add("bump");
+        updateStreakBadge(true);
+      } else {
+        currentStreak = 0;
+        updateStreakBadge(false);
       }
 
       applyAnsweredUI(selectedIndex);
       nextBtn.focus();
     }
 
-    function showResults() {
+    function showResults(preserveRecordState = false) {
       quizView.classList.add("hidden");
       resultsView.classList.remove("hidden");
+      streakBadge.classList.add("hidden");
+
+      if (!preserveRecordState) {
+        const storedBest = loadHighScore();
+        if (score > storedBest && score > 0) {
+          highScore = score;
+          isNewRecord = true;
+          saveHighScore(highScore);
+        } else {
+          highScore = Math.max(storedBest, score);
+          isNewRecord = false;
+        }
+      }
 
       const t = I18N[currentLang];
       const total = t.questions.length;
       const pct = Math.round((score / total) * 100);
       finalScore.textContent = `${score} / ${total}`;
       finalAccuracy.textContent = `${pct}%`;
+      finalMaxStreak.textContent = String(maxStreak);
+      finalHighScore.textContent = `${highScore} / ${total}`;
+
+      newRecordBadge.textContent = t.newRecordBadge;
+      newRecordBadge.classList.toggle("hidden", !isNewRecord);
 
       if (score === 10) {
         resultsEmoji.textContent = "🛸";
@@ -1004,7 +1159,7 @@
         if (resultsView.classList.contains("hidden")) {
           renderQuestion(true);
         } else {
-          showResults();
+          showResults(true);
         }
       });
     });
@@ -1015,14 +1170,19 @@
         currentIndex += 1;
         renderQuestion();
       } else {
-        showResults();
+        showResults(false);
       }
     });
 
     restartBtn.addEventListener("click", () => {
       currentIndex = 0;
       score = 0;
+      currentStreak = 0;
+      maxStreak = 0;
+      isNewRecord = false;
       scoreValue.textContent = "0";
+      updateStreakBadge(false);
+      newRecordBadge.classList.add("hidden");
       resultsView.classList.add("hidden");
       quizView.classList.remove("hidden");
       renderQuestion();
